@@ -2,6 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/morganross/API-Cost-X/actions/workflows/public-release-hygiene.yml"><img alt="Public Release Hygiene" src="https://github.com/morganross/API-Cost-X/actions/workflows/public-release-hygiene.yml/badge.svg"></a>
+  <a href="https://github.com/morganross/API-Cost-X/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/morganross/API-Cost-X/actions/workflows/codeql.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-local--first-0f766e.svg">
   <img alt="SQLite" src="https://img.shields.io/badge/database-SQLite-003B57.svg">
@@ -165,3 +166,22 @@ scripts/smoke.sh
 ```
 
 The GitHub workflow `.github/workflows/public-release-hygiene.yml` runs the same repository hygiene checks and builds the web GUI on pushes and pull requests.
+
+## Release Verification
+
+Tagged releases are built by `.github/workflows/release.yml`. Release assets include source code, built web GUI assets, SHA256 checksums, Sigstore keyless signature bundles, and GitHub artifact attestations.
+
+Verify checksums:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+
+Verify a release archive signature bundle:
+
+```bash
+cosign verify-blob apicostx-0.1.0.tar.gz \
+  --bundle apicostx-0.1.0.tar.gz.sigstore.json \
+  --certificate-identity "https://github.com/morganross/API-Cost-X/.github/workflows/release.yml@refs/tags/v0.1.0" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+```

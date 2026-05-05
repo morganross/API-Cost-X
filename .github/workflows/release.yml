@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package and sign release
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web-gui/package-lock.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+
+      - name: Install runtime dependencies
+        run: |
+          set -euo pipefail
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install -e ./api
+          (cd web-gui && npm ci)
+
+      - name: Validate release candidate
+        run: |
+          set -euo pipefail
+          scripts/validate.sh
+          scripts/smoke.sh
+
+      - name: Build release archives
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME}"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9][A-Za-z0-9.-]*)?$ ]]; then
+            echo "Release tags must look like v1.2.3 or v1.2.3-rc.1; got '$version'." >&2
+            exit 1
+          fi
+
+          archive_base="apicostx-${version#v}"
+          staging="$(mktemp -d)"
+          mkdir -p dist
+
+          git archive --format=tar --prefix="${archive_base}/" "$GITHUB_SHA" | tar -x -C "$staging"
+          mkdir -p "$staging/${archive_base}/web-gui/dist"
+          cp -a web-gui/dist/. "$staging/${archive_base}/web-gui/dist/"
+
+          tar -C "$staging" -czf "dist/${archive_base}.tar.gz" "$archive_base"
+
+          export STAGING_ROOT="$staging"
+          export ARCHIVE_BASE="$archive_base"
+          python - <<'PY'
+          import os
+          import zipfile
+
+          staging_root = os.environ["STAGING_ROOT"]
+          archive_base = os.environ["ARCHIVE_BASE"]
+          source_root = os.path.join(staging_root, archive_base)
+          output_path = os.path.join(os.getcwd(), "dist", f"{archive_base}.zip")
+
+          with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+              for dirpath, _, filenames in os.walk(source_root):
+                  for filename in filenames:
+                      path = os.path.join(dirpath, filename)
+                      archive.write(path, os.path.relpath(path, staging_root))
+          PY
+
+          (cd dist && sha256sum "${archive_base}.tar.gz" "${archive_base}.zip" > SHA256SUMS)
+
+          for artifact in dist/*.tar.gz dist/*.zip; do
+            cosign sign-blob --yes "$artifact" --bundle "${artifact}.sigstore.json"
+          done
+
+          cat > dist/release-notes.md <<EOF
+          APICostX ${version} self-hosted release.
+
+          Assets include source code, built web GUI assets under web-gui/dist, SHA256 checksums, and Sigstore keyless signature bundles.
+
+          Verify checksums:
+
+              sha256sum -c SHA256SUMS
+
+          Verify a Sigstore bundle:
+
+              cosign verify-blob apicostx-${version#v}.tar.gz \\
+                --bundle apicostx-${version#v}.tar.gz.sigstore.json \\
+                --certificate-identity "https://github.com/morganross/API-Cost-X/.github/workflows/release.yml@refs/tags/${version}" \\
+                --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          EOF
+
+      - name: Generate GitHub artifact attestations
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*.zip
+
+      - name: Upload release build artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: release-assets
+          path: dist/*
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "APICostX ${GITHUB_REF_NAME}" \
+            --notes-file dist/release-notes.md \
+            --verify-tag
