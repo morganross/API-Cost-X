@@ -11,7 +11,7 @@
 APICostX is a single-user, self-hosted application for running and comparing AI generation/evaluation workflows on your own machine.
 
 It ships with a local web GUI, a local API service, FilePromptForge, an installer, and a sanitized sample SQLite database that includes starter presets and sample run history. It does not use WordPress, accounts, multi-user tenancy, external auth, or hosted services for its own runtime state.
-
+<img src="screenshot.png" alt="Screenshot" width="600">
 ## What You Get
 
 - A browser-based web GUI for content, presets, model selection, execution, history, and quality review.
