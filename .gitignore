@@ -5,6 +5,13 @@
 !.env.example
 .git-credentials
 .netrc
+.npmrc
+.pypirc
+.aws/
+.oci/
+.azure/
+.gcloud/
+.config/gcloud/
 .config/gh/
 auth.json
 credentials.json

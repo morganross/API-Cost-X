@@ -15,7 +15,6 @@ import re
 import threading
 import uuid
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Optional
 
 import requests
@@ -64,10 +63,6 @@ AIQ_ROLE_BINDING_KEYS = (
     "summary_model",
 )
 SECRET_FIELD_NAMES = {"api_key", "authorization", "token", "access_token", "refresh_token", "secret"}
-NVIDIA_API_KEY_FALLBACK_FILES = (
-    Path("/opt/apicostx/apicostx/.env"),
-    Path("/home/ubuntu/experiments/aiq-2.0.0/deploy/.env"),
-)
 
 
 def _coerce_positive_int(value: Any, default: int) -> int:
@@ -118,16 +113,6 @@ def _get_system_nvidia_api_key() -> str:
     api_key = os.getenv("NVIDIA_API_KEY", "").strip()
     if api_key:
         return api_key
-
-    for path in NVIDIA_API_KEY_FALLBACK_FILES:
-        try:
-            if not path.exists():
-                continue
-            for line in path.read_text(encoding="utf-8").splitlines():
-                if line.startswith("NVIDIA_API_KEY="):
-                    return line.split("=", 1)[1].strip().strip('"').strip("'")
-        except Exception:
-            continue
     return ""
 
 

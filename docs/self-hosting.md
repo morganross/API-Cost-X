@@ -4,6 +4,12 @@ APICostX runs as a single-user local application with one API service process an
 
 This document describes the public install flow for running APICostX locally.
 
+## Security Model
+
+APICostX is local-only software. It has no login, no account system, and no multi-user authorization layer. That is intentional for a single-user self-hosted app, but it also means the app must stay bound to localhost unless you add your own trusted network controls.
+
+Never expose APICostX directly to the public internet, a shared LAN, or an untrusted network. Anyone who can reach it can use the app and any provider keys loaded from your local `.env`.
+
 ## Requirements
 
 - Linux, macOS, or WSL for the shell scripts
@@ -26,6 +32,8 @@ cd API-Cost-X
 
 `start.sh` starts the API service and web GUI using the ports from `.env`. It also repeats the same first-run database initialization check so direct starts after a deleted DB recover cleanly.
 
+By default, `start.sh` binds to `127.0.0.1`. Non-localhost binds are refused unless you explicitly set the unsafe override documented in `.env.example`.
+
 ## Main SQLite Database
 
 The self-hosted app uses one runtime SQLite database, normally:
@@ -37,6 +45,8 @@ data/api-cost-x.db
 The bundled base database at `api/app/seed/api-cost-x.seed.db` is copied into that main runtime path only on first install/start. Saved presets and sample history then live in the same main SQLite database as all future local data. Sample generated Markdown files are copied under `data/user_local/` so the included history can open generated documents.
 
 Provider/API secrets are not stored in SQLite. They belong only in the root `.env` file.
+
+If you use GitHub import/export features, use the narrowest token permissions possible. GitHub folder creation can write `.gitkeep` files to connected repositories.
 
 ## Local Ports
 
@@ -55,6 +65,7 @@ http://127.0.0.1:5173
 ## Design Constraints
 
 - Single local user.
+- Localhost-only by default.
 - No external CMS runtime.
 - No production server access.
 - No account system in the local OSS mode.

@@ -36,10 +36,23 @@ fi
 
 . .venv/bin/activate
 
-python -m uvicorn app.main:app --app-dir api --host "${API_COST_X_HOST:-127.0.0.1}" --port "$api_port" &
+app_host="${API_COST_X_HOST:-127.0.0.1}"
+case "$app_host" in
+  localhost|127.0.0.1|::1)
+    ;;
+  *)
+    if [[ "${API_COST_X_ALLOW_UNSAFE_BIND:-}" != "1" ]]; then
+      echo "Refusing to bind APICostX to non-localhost host '$app_host'."
+      echo "Set API_COST_X_ALLOW_UNSAFE_BIND=1 only if you understand this exposes the app on the network."
+      exit 1
+    fi
+    ;;
+esac
+
+python -m uvicorn app.main:app --app-dir api --host "$app_host" --port "$api_port" &
 api_pid=$!
 
-(cd web-gui && npm run dev -- --host "${API_COST_X_HOST:-127.0.0.1}" --port "$web_port") &
+(cd web-gui && npm run dev -- --host "$app_host" --port "$web_port") &
 web_pid=$!
 
 trap 'kill "$api_pid" "$web_pid" 2>/dev/null || true' EXIT

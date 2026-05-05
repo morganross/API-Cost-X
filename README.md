@@ -12,9 +12,15 @@ APICostX is a single-user, self-hosted application for running and comparing AI 
 
 It ships with a local web GUI, a local API service, FilePromptForge, an installer, and a sanitized sample SQLite database that includes starter presets and sample run history. It does not use WordPress, accounts, multi-user tenancy, external auth, or hosted services for its own runtime state.
 
-
 <img src="/Screenshot.png" alt="Screenshot" width="800">
 
+## Security Model
+
+APICostX is a local-only tool. It intentionally has no login screen, no user accounts, and no access-control layer because it is designed for one person on one trusted machine.
+
+Do not expose APICostX to the public internet, a shared LAN, or an untrusted network. Anyone who can reach the web GUI or API service can use the app with the provider keys available in your local `.env`.
+
+By default, `./start.sh` binds to `127.0.0.1` only. Keep that default unless you fully understand the risk.
 
 ## What You Get
 
@@ -80,6 +86,8 @@ Open `.env`, uncomment only the providers you use, and fill in your keys:
 
 Restart APICostX after changing `.env`.
 
+If you use GitHub features, prefer a least-privilege GitHub token scoped only to the repositories and operations you actually need. Some GitHub import/export actions can write files such as `.gitkeep` into connected repositories.
+
 ## Start
 
 ```bash
@@ -142,6 +150,7 @@ scripts/smoke.sh
 - Port already in use: stop the conflicting process, or change `API_COST_X_API_PORT` / `API_COST_X_WEB_PORT` in `.env`.
 - Provider calls fail: confirm the matching provider key is present in `.env`, then restart APICostX.
 - Browser cannot reach the app: confirm `./start.sh` is still running and open `http://127.0.0.1:5173`.
+- `Refusing unsafe bind host`: leave `API_COST_X_HOST=127.0.0.1`. Binding to `0.0.0.0` can expose a no-auth local app and its provider-backed actions to other machines.
 
 ## Repository Hygiene
 

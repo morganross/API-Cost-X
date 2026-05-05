@@ -12,6 +12,8 @@ The private web-gui and api repos under `/home/ubuntu/acm-oss/sources/` are refe
 4. Do not preserve private repo Git history in this public repo.
 5. Do not commit real credentials, tokens, keys, runtime databases, unsanitized run artifacts, generated bundles, logs, backups, or production docs. The only database exception is the reviewed bundled base DB under `api/app/seed/`.
 6. If a file is ambiguous, leave it out until reviewed.
+7. Do not publish code that probes old deployment paths for secrets. Self-hosted secret loading must come only from the root `.env` / process environment.
+8. Keep the local no-auth app localhost-only by default.
 
 ## Always Exclude
 
@@ -24,6 +26,8 @@ The private web-gui and api repos under `/home/ubuntu/acm-oss/sources/` are refe
 - web-gui build output and api generated output
 - backup files and backup directories
 - private operational docs, incident reports, infrastructure runbooks, and live deployment notes
+- cloud CLI config directories such as `.aws/`, `.oci/`, `.azure/`, and `.gcloud/`
+- package registry auth files such as `.npmrc` and `.pypirc`
 
 ## Initial Whitelist
 
@@ -50,6 +54,7 @@ New repo native files:
 - Remove production-only header contracts from OSS mode.
 - Use one local single-user plain SQLite database.
 - Replace provider-key storage with local user-provided configuration.
+- Remove any fallback credential discovery outside the root `.env`.
 - Sanitize any sample data into the bundled base DB and strip credentials, private user metadata, and cost-tracking data.
 - Regenerate web-gui bundles from public source only.
 
@@ -59,6 +64,7 @@ Before every commit, run:
 
 ```bash
 scripts/validate.sh
+scripts/smoke.sh
 git status --short
 ```
 

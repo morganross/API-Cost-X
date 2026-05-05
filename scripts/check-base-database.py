@@ -28,8 +28,24 @@ SECRET_PATTERNS = {
     "openai_key": re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
     "anthropic_key": re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),
     "github_token": re.compile(r"gh[pousr]_[A-Za-z0-9_]{20,}"),
+    "github_pat": re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
     "google_ai_key": re.compile(r"AIza[A-Za-z0-9_-]{20,}"),
+    "aws_access_key": re.compile(r"(A3T[A-Z0-9]|AKIA|ASIA)[A-Z0-9]{16}"),
+    "npm_token": re.compile(r"npm_[A-Za-z0-9]{36}"),
+    "pypi_token": re.compile(r"pypi-[A-Za-z0-9_-]{50,}"),
+    "cloudflare_token": re.compile(
+        r"(CF_API_TOKEN|CF_AUTH_KEY|CLOUDFLARE_API_TOKEN|CLOUDFLARE_AUTH_KEY)[^A-Za-z0-9]{0,20}[A-Za-z0-9_-]{20,}",
+        re.IGNORECASE,
+    ),
+    "generic_secret_assignment": re.compile(
+        r"(api[_-]?token|auth[_-]?token|secret[_-]?key|client[_-]?secret)[\"' ]*[:=][\"' ]*[A-Za-z0-9_./+=-]{24,}",
+        re.IGNORECASE,
+    ),
+    "oci_tenancy": re.compile(r"tenancy\s*=\s*ocid1\.", re.IGNORECASE),
+    "oci_user": re.compile(r"user\s*=\s*ocid1\.user", re.IGNORECASE),
+    "oci_key_file": re.compile(r"(private_key_file|key_file)\s*=", re.IGNORECASE),
     "private_key": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    "oci_private_key": re.compile(r"-----BEGIN OCI API KEY-----"),
 }
 
 

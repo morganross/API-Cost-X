@@ -114,6 +114,20 @@ async def _run_blocking_github_call(
     return result
 
 
+def _github_exception_message(exc: Exception) -> str:
+    data = getattr(exc, "data", None)
+    if isinstance(data, dict):
+        message = data.get("message")
+        if message:
+            return str(message)
+    return "GitHub API request failed"
+
+
+def _raise_internal_github_error(client_message: str, exc: Exception) -> None:
+    logger.exception("%s", client_message, exc_info=True)
+    raise HTTPException(status_code=500, detail=client_message) from exc
+
+
 def _test_github_connection_sync(token: str, repo: str, branch: str) -> tuple[bool, str]:
     """Test a GitHub connection. Returns (is_valid, message)."""
     try:
@@ -143,9 +157,10 @@ def _test_github_connection_sync(token: str, repo: str, branch: str) -> tuple[bo
     except GithubException as e:
         if e.status == 404:
             return False, f"Repository '{repo}' not found or no access"
-        return False, f"GitHub API error: {e.data.get('message', str(e))}"
+        return False, f"GitHub API error: {_github_exception_message(e)}"
     except Exception as e:
-        return False, f"Connection error: {str(e)}"
+        logger.exception("Unexpected error testing GitHub connection")
+        return False, "Connection error while reaching GitHub"
 
 
 async def _test_github_connection(token: str, repo: str, branch: str) -> tuple[bool, str]:
@@ -514,10 +529,12 @@ async def browse_repository(
 
     except ImportError:
         raise HTTPException(status_code=500, detail="PyGithub not installed")
+    except HTTPException:
+        raise
     except GithubException as e:
-        raise HTTPException(status_code=400, detail=f"GitHub error: {e.data.get('message', str(e))}")
+        raise HTTPException(status_code=400, detail=f"GitHub error: {_github_exception_message(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error browsing repository: {str(e)}")
+        _raise_internal_github_error("Error browsing repository", e)
 
 
 # ============================================================================
@@ -567,12 +584,14 @@ async def get_file_content(
 
     except ImportError:
         raise HTTPException(status_code=500, detail="PyGithub not installed")
+    except HTTPException:
+        raise
     except GithubException as e:
-        raise HTTPException(status_code=400, detail=f"GitHub error: {e.data.get('message', str(e))}")
+        raise HTTPException(status_code=400, detail=f"GitHub error: {_github_exception_message(e)}")
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File is not a text file")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+        _raise_internal_github_error("Error reading file", e)
 
 
 # ============================================================================
@@ -649,13 +668,14 @@ async def import_file_as_content(
 
     except ImportError:
         raise HTTPException(status_code=500, detail="PyGithub not installed")
+    except HTTPException:
+        raise
     except GithubException as e:
-        raise HTTPException(status_code=400, detail=f"GitHub error: {e.data.get('message', str(e))}")
+        raise HTTPException(status_code=400, detail=f"GitHub error: {_github_exception_message(e)}")
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File is not a text file")
     except Exception as e:
-        logger.exception(f"Error importing file from GitHub")
-        raise HTTPException(status_code=500, detail=f"Error importing file: {str(e)}")
+        _raise_internal_github_error("Error importing file", e)
 
 
 # ============================================================================
@@ -715,8 +735,9 @@ async def create_folder(
 
     except ImportError:
         raise HTTPException(status_code=500, detail="PyGithub not installed")
+    except HTTPException:
+        raise
     except GithubException as e:
-        raise HTTPException(status_code=400, detail=f"GitHub error: {e.data.get('message', str(e))}")
+        raise HTTPException(status_code=400, detail=f"GitHub error: {_github_exception_message(e)}")
     except Exception as e:
-        logger.exception(f"Error creating folder in GitHub")
-        raise HTTPException(status_code=500, detail=f"Error creating folder: {str(e)}")
+        _raise_internal_github_error("Error creating folder", e)
