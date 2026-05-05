@@ -1,0 +1,53 @@
+concurrency:
+  enabled: true
+  max_concurrency: 46
+  qps: 0.9
+  retry:
+    base_delay_ms: 500
+    jitter: full
+    max_delay_ms: 6000
+    max_retries: 2
+  timeout_seconds: 600
+include: []
+json: false
+max_completion_tokens: 50000
+model: gpt-5
+prompt_template: null
+provider: openai
+provider_urls:
+  google: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent
+  openai: https://api.openai.com/v1/responses
+  perplexity: https://api.perplexity.ai/v1/async/sonar
+  tavily: https://api.tavily.com/research
+  openaidp: https://api.openai.com/v1/responses
+  googledp: https://generativelanguage.googleapis.com/v1beta/interactions
+  anthropic: https://api.anthropic.com/v1/messages
+  openrouter: https://openrouter.ai/api/v1/chat/completions
+providers:
+  perplexity:
+    timeout_seconds: 3600
+  openaidp:
+    timeout_seconds: 3600
+  googledp:
+    timeout_seconds: 3600
+runs: []
+test:
+  file_a: test/input/sample_utf8.txt
+  file_b: test/prompts/standard_prompt.txt
+  out: test/output/<file_b_stem>.<model_name>.fpf.response.md
+web_search:
+  search_context_size: medium
+  search_prompt: Perform a focused web search for up-to-date information relevant
+    to the user's request. Summarize the most relevant findings and include citation
+    links.
+# Perplexity Sonar (via OpenRouter) — required by fpf_openrouter_main.py
+# search_mode: "web" enables real-time web search for all Sonar models
+# sonar-deep-research also requires reasoning_effort (separate check in same block)
+search_mode: web
+reasoning_effort: high
+
+# Tavily — required by fpf_tavily_main.py
+# stream: false disables streaming (Tavily's sync research endpoint)
+# citation_format: numbered | mla | apa | chicago (Tavily API default: numbered)
+stream: false
+citation_format: numbered

@@ -1,0 +1,639 @@
+openai:gpt-4.1:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 32768
+openai:gpt-4.1-mini:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openai:gpt-5:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5-mini:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5-nano:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.1:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.2:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.2-pro:
+  sections:
+    - fpf
+  max_output_tokens: 128000
+openai:gpt-5.5:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.5-pro:
+  sections:
+    - fpf
+  max_output_tokens: 128000
+openai:gpt-5.4:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.4-pro:
+  sections:
+    - fpf
+  max_output_tokens: 128000
+openai:gpt-5.4-mini:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 128000
+openai:gpt-5.4-nano:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 128000
+openai:o4-mini:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 100000
+openai:o3:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 100000
+openai:o3-pro:
+  sections:
+    - fpf
+  max_output_tokens: 100000
+openai:gpt-5-pro:
+  sections:
+    - fpf
+  max_output_tokens: 272000
+openaidp:o3-deep-research:
+  sections:
+    - fpf
+  max_output_tokens: 100000
+  dr_native: true
+openaidp:o4-mini-deep-research:
+  sections:
+    - fpf
+  max_output_tokens: 100000
+  dr_native: true
+googledp:deep-research-pro-preview-12-2025:
+  sections:
+    - fpf
+  max_output_tokens: 65536
+  dr_native: true
+googledp:deep-research-preview-04-2026:
+  sections:
+    - fpf
+  max_output_tokens: 65536
+  dr_native: true
+googledp:deep-research-max-preview-04-2026:
+  sections:
+    - fpf
+  max_output_tokens: 65536
+  dr_native: true
+google:gemini-3.1-pro-preview:
+  sections:
+    - fpf
+    - gpt-r
+    - eval
+  max_output_tokens: 65536
+google:gemini-3.1-flash-lite-preview:
+  sections:
+    - fpf
+  max_output_tokens: 65536
+google:gemini-3-pro-preview:
+  sections: []
+  max_output_tokens: 65536
+google:gemini-3-flash-preview:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 65536
+google:gemini-2.5-pro:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 65536
+google:gemini-2.5-flash:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 65536
+google:gemini-2.5-flash-lite:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 65536
+tavily:tvly-mini:
+  sections:
+    - fpf
+  max_output_tokens: 16384
+  dr_native: true
+tavily:tvly-pro:
+  sections:
+    - fpf
+  max_output_tokens: 32768
+  dr_native: true
+perplexity:sonar-deep-research:
+  sections:
+    - fpf
+  max_output_tokens: 128000
+  dr_native: true
+anthropic:claude-opus-4-6:
+  sections:
+    - fpf
+    - gpt-r
+    - eval
+  max_output_tokens: 128000
+anthropic:claude-opus-4-7:
+  sections:
+    - fpf
+  max_output_tokens: 128000
+anthropic:claude-sonnet-4-6:
+  sections:
+    - fpf
+    - gpt-r
+    - eval
+  max_output_tokens: 64000
+anthropic:claude-opus-4-5:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 64000
+anthropic:claude-haiku-4-5:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 64000
+anthropic:claude-sonnet-4-5:
+  sections:
+    - fpf
+    - eval
+  max_output_tokens: 64000
+openrouter:openai/gpt-4o:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 16384
+openrouter:openai/gpt-4o-mini:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 16384
+openrouter:deepseek/deepseek-r1:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 64000
+openrouter:perplexity/sonar-pro:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:perplexity/sonar:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 16384
+openrouter:perplexity/sonar-deep-research:
+  sections: []
+  max_output_tokens: 32768
+  dr_native: true
+openrouter:perplexity/sonar-reasoning-pro:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:meta-llama/llama-3.1-405b-instruct:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:meta-llama/llama-3.1-70b-instruct:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:google/gemini-2.5-pro:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/gemini-2.5-flash:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/gemini-2.5-flash-lite:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/gemini-3.1-pro-preview:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/gemini-3-pro-preview:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/gemini-3-flash-preview:
+  sections:
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:mistralai/mistral-large-2411:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 131072
+openrouter:mistralai/mistral-small-3.1-24b-instruct:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:moonshotai/kimi-k2.6:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 262144
+openrouter:moonshotai/kimi-k2.5:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65535
+openrouter:moonshotai/kimi-k2-thinking:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 262144
+openrouter:moonshotai/kimi-k2-0905:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 262144
+openrouter:moonshotai/kimi-k2:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:z-ai/glm-5.1:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 131072
+openrouter:z-ai/glm-5:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 131072
+openrouter:deepseek/deepseek-v3.2:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:deepseek/deepseek-chat-v3-0324:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:mistralai/mistral-large-2512:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 131072
+openrouter:deepseek/deepseek-chat-v3.1:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 7168
+openrouter:deepseek/deepseek-v3.1-terminus:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 32768
+openrouter:minimax/minimax-m1:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 40000
+openrouter:arcee-ai/trinity-large-thinking:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 262144
+openrouter:qwen/qwen3.5-397b-a17b:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65536
+openrouter:z-ai/glm-4.5:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 98304
+openrouter:qwen/qwen3-235b-a22b-thinking-2507:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 262144
+openrouter:qwen/qwen3-235b-a22b:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 8192
+openrouter:minimax/minimax-m2:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 196608
+openrouter:mistralai/mixtral-8x22b-instruct:
+  sections:
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65536
+openrouter:qwen/qwen3.5-122b-a10b:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65536
+openrouter:mistralai/mistral-small-2603:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65536
+openrouter:openai/gpt-oss-120b:
+  sections:
+    - fpf
+    - gpt-r
+    - dr
+    - eval
+  max_output_tokens: 65536
+openrouter:google/gemma-4-26b-a4b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 32768
+openrouter:google/gemma-4-31b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 32768
+openrouter:minimax/minimax-m2.5:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 8192
+openrouter:nvidia/nemotron-3-nano-30b-a3b:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+openrouter:nvidia/nemotron-3-super-120b-a12b:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 262144
+openrouter:nvidia/nemotron-nano-12b-v2-vl:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 128000
+openrouter:nvidia/nemotron-nano-9b-v2:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+openrouter:openai/gpt-oss-120b:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 131072
+openrouter:openai/gpt-oss-20b:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 8192
+openrouter:openrouter/free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+openrouter:z-ai/glm-4.5-air:free:
+  sections:
+    - free
+    - fpf
+    - gpt-r
+    - dr
+    - aiq
+  max_output_tokens: 96000
+openrouter:arcee-ai/trinity-large-preview:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:cognitivecomputations/dolphin-mistral-24b-venice-edition:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:google/gemma-3-12b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 8192
+openrouter:google/gemma-3-27b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 8192
+openrouter:google/gemma-3-4b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 8192
+openrouter:google/gemma-3n-e2b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 2048
+openrouter:google/gemma-3n-e4b-it:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 2048
+openrouter:google/lyria-3-clip-preview:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:google/lyria-3-pro-preview:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 65536
+openrouter:liquid/lfm-2.5-1.2b-instruct:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:liquid/lfm-2.5-1.2b-thinking:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:meta-llama/llama-3.2-3b-instruct:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:meta-llama/llama-3.3-70b-instruct:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:nousresearch/hermes-3-llama-3.1-405b:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+openrouter:openrouter/elephant-alpha:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 32768
+openrouter:qwen/qwen3-coder:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+  max_output_tokens: 262000
+openrouter:qwen/qwen3-next-80b-a3b-instruct:free:
+  sections:
+    - free
+    - gpt-r
+    - dr
+nvidia:nvidia/nemotron-3-super-120b-a12b:
+  sections:
+    - aiq
+  max_output_tokens: 262144

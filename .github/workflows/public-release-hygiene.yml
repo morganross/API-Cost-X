@@ -1,0 +1,38 @@
+name: Public Release Hygiene
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web-gui/package-lock.json
+
+      - name: Validate shell scripts and repository hygiene
+        run: scripts/validate.sh
+
+      - name: Compile Python source
+        run: PYTHONDONTWRITEBYTECODE=1 find api/app packages/FilePromptForge -type f -name '*.py' -print0 | xargs -0 python -m py_compile
+
+      - name: Install web GUI dependencies
+        working-directory: web-gui
+        run: npm ci
+
+      - name: Build web GUI
+        working-directory: web-gui
+        run: npm run build

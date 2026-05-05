@@ -1,0 +1,101 @@
+[project]
+name = "apicostx"
+version = "2.0.0"
+description = "APICostX self-hosted API service for local research evaluation"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [
+    { name = "APICostX Contributors" }
+]
+keywords = ["llm", "evaluation", "research", "gpt-researcher"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Core Framework
+    "fastapi>=0.104.1",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.5.1",
+    "pydantic-settings>=2.1.0",
+
+    # Database
+    "sqlalchemy>=2.0.28",
+    "aiosqlite>=0.19.0",
+
+    # GPT-Researcher (main research engine)
+    "gpt-researcher>=0.14.0",
+
+    # LLM Providers
+    "openai>=1.3.3",
+    "anthropic>=0.18.0",
+    "google-generativeai==0.7.2",
+    "google-genai==1.56.0",
+    "langchain-google-genai==4.1.2",
+
+    # Async & HTTP
+    "httpx>=0.26.0",
+    "aiofiles>=23.2.1",
+    "prometheus-client>=0.22.1",
+
+    # Config & Environment
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.1",
+
+    # Utilities
+    "tiktoken>=0.7.0",
+    "rich>=13.7.0",
+    "python-multipart>=0.0.6",
+    "jinja2>=3.1.0",
+    "email-validator>=2.0.0",
+
+    # Evaluation
+    "scikit-learn>=1.4.0",
+    "numpy>=1.26.0",
+
+    # GitHub Integration
+    "PyGithub>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/morganross/API-Cost-X"
+Documentation = "https://github.com/morganross/API-Cost-X#readme"
+Repository = "https://github.com/morganross/API-Cost-X"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+include = ["app/static/**"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_return_any = true
+warn_unused_ignores = true

@@ -1,0 +1,129 @@
+# OpenAI Model API Request Parameters (Responses API - /v1/responses)
+# This report lists configurable parameters for OpenAI models, focusing on
+# those related to tokens, reasoning, and web search. It indicates which
+# parameters are generally accepted or may cause errors if used incorrectly.
+# Information compiled from OpenAI API Reference (Responses API) and
+# internal model capability notes (filepromptforge/openai_model_capabilities.md)
+# and fpf_openai_main.py directly.
+
+# General Request Body Parameters for /v1/responses API Endpoint
+# These parameters apply to the overall request, some having model-specific behavior.
+# Refer to the 'model' sections below for specific guidance.
+common_request_parameters:
+  model:  # string; Required. e.g., "gpt-5-nano", "gpt-4o", "o3"
+    description: "ID of the model to use."
+  input:  # array; Required based on context. Text, image, or file inputs.
+    description: "Content for the model to process."
+  max_output_tokens: # integer; Optional.
+    description: "Upper bound for tokens generated, including visible output and reasoning tokens. Default is null (no bound)."
+    notes: "Can be controlled via reasoning configuration (see reasoning_map in config recommendations)."
+  temperature: # number; Optional. Defaults to 1.
+    description: "Sampling temperature, 0 to 2. Higher values -> more random. Typically 0.2 to 0.7 for stable output."
+  top_p: # number; Optional. Defaults to 1.
+    description: "Nucleus sampling. Model considers tokens with top_p probability mass."
+    notes: "Use either temperature or top_p, not both."
+  tool_choice: # string or object; Optional. Defaults to "auto".
+    description: "How the model selects tools. 'auto', 'none', 'required', or specific tool object."
+  tools: # array; Optional.
+    description: "Array of tools the model may call (built-in, MCP, function calls)."
+    notes: "Use [{\"type\": \"web_search\"}] for built-in web search. Supported tools vary by model."
+  include: # array; Optional.
+    description: "Specify additional output data to include in the response."
+    example_values:
+      - "web_search_call.action.sources" # Includes web search source URLs.
+      - "code_interpreter_call.outputs" # Outputs from code interpreter.
+  reasoning: # object; Optional. "gpt-5 and o-series models only".
+    description: "Configuration options for reasoning models. Shape varies by model (see below)."
+    properties:
+      effort: # string; e.g., low|medium|high|minimal.
+        description: "Reasoning effort level. Values like 'minimal', 'low', 'medium', 'high'."
+        notes: "Supported by GPT-5 and o-series models. Sending to unsupported models may error."
+      verbosity: # string; specific to some GPT-5.
+        description: "Controls verbosity of reasoning. Lower values -> more concise."
+    notes: "If an explicit reasoning object is not supported by a model, sending it may result in API rejection (HTTP 400)."
+  web_search_options: # object; Optional.
+    description: "Specific options for the web search tool."
+    properties:
+      max_results: # integer; specific to web_search.
+        description: "Maximum number of search results to return."
+      search_prompt: # string; specific to web_search.
+        description: "Custom prompt for the search query."
+      filters: # object; specific to web_search.
+        description: "Filter search results by attributes (e.g., domain exclusion)."
+    notes: "Parameters within web_search_options may be tool-specific and can vary in support. Often configured at adapter level."
+  truncation: # string; Optional. Defaults to "disabled".
+    description: "Strategy for truncating input if it exceeds model's context window ('auto' or 'disabled')."
+  store: # boolean; Optional. Defaults to true.
+    description: "Whether to store the generated response for later retrieval."
+  prompt_cache_key: # string; Optional.
+    description: "Used by OpenAI to cache responses for similar requests. Replaces 'user' field for caching."
+  safety_identifier: # string; Optional.
+    description: "Stable ID for end-users to detect policy violations. Replaces 'user' field for abuse monitoring."
+  service_tier: # string; Optional. Defaults to 'auto'.
+    description: "Processing type for serving the request ('auto', 'default', 'flex', 'priority')."
+  background: # boolean; Optional. Defaults to false.
+    description: "Whether to run the model response in the background."
+  conversation: # string or object; Optional.
+    description: "Conversation ID or object for multi-turn interactions. Mutually exclusive with `previous_response_id`."
+  previous_response_id: # string; Optional.
+    description: "ID of previous response for multi-turn conversations. Mutually exclusive with `conversation`."
+  instructions: # string; Optional.
+    description: "System (developer) message inserted into the model's context."
+  metadata: # map; Optional.
+    description: "Set of 16 key-value pairs for additional information (max 64 char key, 512 char value)."
+  max_tool_calls: # integer; Optional.
+    description: "Maximum number of tool calls processed in a response."
+  stream: # boolean; Optional. Defaults to false.
+    description: "If true, streams response data as server-sent events."
+  stream_options: # object; Optional.
+    description: "Options for streaming responses, if 'stream' is true."
+  text: # object; Optional.
+    description: "Configuration options for text response (plain or structured JSON)."
+  top_logprobs: # integer; Optional.
+    description: "Number of most likely tokens to return with log probabilities (0-20)."
+
+## Supported Models by FilePromptForge OpenAI Adapter (from fpf_openai_main.py ALLOWED_MODELS)
+# These models are explicitly allowed and handled by the local adapter.
+# Their behavior for 'reasoning' and 'web_search' is influenced by the _attach_reasoning_for_model function.
+
+# gpt-5, gpt-5-mini, gpt-5-nano
+# Reasoning-capable. The adapter sends `reasoning: {"effort": "high"}` by default if not specified.
+gpt-5_family:
+  model: "gpt-5" # Also "gpt-5-mini", "gpt-5-nano", "gpt-5.1", "gpt-5.1-mini"
+  reasoning:
+    effort: "high" # Adapter always sets "effort" for this family (default: "high", configurable in cfg).
+    notes: "Explicitly supports 'reasoning' object with 'effort'."
+  tools:
+    type: "web_search" # Fully supported via Responses API.
+    notes: "Supports web_search tool."
+
+# o4-mini, o3, o3-mini, o1
+# Reasoning-capable. The adapter sends `reasoning: {"effort": "high"}` by default if not specified.
+o_series_reasoning_models:
+  model: "o4-mini" # Also "o3", "o3-mini", "o1"
+  reasoning:
+    effort: "high" # Adapter always sets "effort" for this family (default: "high", configurable in cfg).
+    notes: "Supports 'reasoning' object with 'effort'. Be cautious with token usage, as this can increase token usage."
+  tools:
+    type: "web_search" # Supported via Responses API.
+    notes: "Supports web_search tool."
+
+# Models not in ALLOWED_MODELS:
+# The fpf_openai_main.py adapter will explicitly error out if a model not in ALLOWED_MODELS is used.
+# For example, gpt-4.1, gpt-4o, gpt-4o-mini are NOT explicitly in ALLOWED_MODELS.
+# If these or other models from OpenAI are used, the adapter will raise a RuntimeError:
+# "Model '{model}' is not allowed by the OpenAI provider whitelist."
+# To add support for these, their behavior needs to be mapped in `_attach_reasoning_for_model`
+# and added to `ALLOWED_MODELS` in `fpf_openai_main.py`.
+
+# General Parameters & Error Considerations
+global_notes:
+  unsupported_parameters:
+    - "Sending unknown or unsupported parameters, or correct parameters with invalid values, will typically result in HTTP 400 Bad Request errors from the OpenAI API. The local adapter may also raise a RuntimeError if a model is not explicitly whitelisted."
+    - "Always refer to the latest official OpenAI API documentation for specific model versions, as capabilities and parameter support can change rapidly."
+  token_usage_control:
+    - "While model parameters like max_output_tokens can cap output, large 'input_tokens' or 'cached_tokens' are often provider-side behaviors due to internal context management and tool outputs. Client-side guards are recommended."
+    - "Reasoning effort can significantly impact 'reasoning_tokens' and 'cached_tokens' reported by the provider."
+  web_search_caveats:
+    - "The 'tools' and 'web_search_options' objects are distinct. Ensure you are providing parameters to the correct object. For built-in web search, a 'tools' array with {'type': 'web_search'} is fundamental."
+    - "The `include` parameter for `web_search_call.action.sources` is crucial for seeing which URLs were used for grounding."
