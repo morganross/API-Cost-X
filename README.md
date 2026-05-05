@@ -6,6 +6,7 @@
   <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-local--first-0f766e.svg">
   <img alt="SQLite" src="https://img.shields.io/badge/database-SQLite-003B57.svg">
   <img alt="Node 20+" src="https://img.shields.io/badge/node-20%2B-339933.svg">
+  <a href="https://scorecard.dev/viewer/?uri=github.com/morganross/API-Cost-X"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/morganross/API-Cost-X/badge"></a>
 </p>
 
 APICostX is a single-user, self-hosted application for running and comparing AI generation/evaluation workflows on your own machine.
