@@ -101,8 +101,13 @@ jobs:
           mkdir -p dist
 
           git archive --format=tar --prefix="${archive_base}/" "$GITHUB_SHA" | tar -x -C "$staging"
-          mkdir -p "$staging/${archive_base}/web-gui/dist"
-          cp -a web-gui/dist/. "$staging/${archive_base}/web-gui/dist/"
+          built_web_dir="assets/react-build"
+          if [[ ! -d "$built_web_dir" ]]; then
+            echo "Expected built web GUI assets at ${built_web_dir}; run scripts/smoke.sh first." >&2
+            exit 1
+          fi
+          mkdir -p "$staging/${archive_base}/${built_web_dir}"
+          cp -a "${built_web_dir}/." "$staging/${archive_base}/${built_web_dir}/"
 
           tar -C "$staging" -czf "dist/${archive_base}.tar.gz" "$archive_base"
 
@@ -133,7 +138,7 @@ jobs:
           cat > dist/release-notes.md <<EOF
           APICostX ${version} self-hosted release.
 
-          Assets include source code, built web GUI assets under web-gui/dist, SHA256 checksums, and Sigstore keyless signature bundles.
+          Assets include source code, built web GUI assets under assets/react-build, SHA256 checksums, and Sigstore keyless signature bundles.
 
           Verify checksums:
 

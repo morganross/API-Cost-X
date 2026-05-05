@@ -169,7 +169,7 @@ The GitHub workflow `.github/workflows/public-release-hygiene.yml` runs the same
 
 ## Release Verification
 
-Tagged releases are built by `.github/workflows/release.yml`. Release assets include source code, built web GUI assets, SHA256 checksums, Sigstore keyless signature bundles, and GitHub artifact attestations.
+Tagged releases are built by `.github/workflows/release.yml`. Release assets include source code, built web GUI assets under `assets/react-build`, SHA256 checksums, Sigstore keyless signature bundles, and GitHub artifact attestations.
 
 Verify checksums:
 
@@ -180,8 +180,8 @@ sha256sum -c SHA256SUMS
 Verify a release archive signature bundle:
 
 ```bash
-cosign verify-blob apicostx-0.1.0.tar.gz \
-  --bundle apicostx-0.1.0.tar.gz.sigstore.json \
-  --certificate-identity "https://github.com/morganross/API-Cost-X/.github/workflows/release.yml@refs/tags/v0.1.0" \
+cosign verify-blob apicostx-0.1.2.tar.gz \
+  --bundle apicostx-0.1.2.tar.gz.sigstore.json \
+  --certificate-identity "https://github.com/morganross/API-Cost-X/.github/workflows/release.yml@refs/tags/v0.1.2" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 ```
