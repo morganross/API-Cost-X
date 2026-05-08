@@ -32,6 +32,7 @@ datas += collect_tree(ROOT / "assets" / "react-build", "assets/react-build")
 datas += collect_tree(ROOT / "packages" / "FilePromptForge", "packages/FilePromptForge")
 
 hiddenimports = [
+    "app.main",
     "aiosqlite",
     "sqlalchemy.dialects.sqlite.aiosqlite",
     "uvicorn.logging",
