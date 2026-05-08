@@ -27,6 +27,10 @@ def _resource_root() -> Path:
         return Path(bundle_root)
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
+
+    for candidate in Path(__file__).resolve().parents:
+        if (candidate / ".env.example").exists() or (candidate / "assets" / "react-build").exists():
+            return candidate
     return Path(__file__).resolve().parents[2]
 
 

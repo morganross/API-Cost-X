@@ -35,12 +35,13 @@ From the repo root on Windows:
 
 The script:
 
-1. creates `.venv-windows-build`;
-2. installs the API package and PyInstaller into that build venv;
-3. runs `npm ci` and `npm run build` in `web-gui`;
-4. builds `dist\APICostX\APICostX.exe` with PyInstaller;
-5. builds `dist\installer\APICostX-Setup-<version>.exe` with Inno Setup;
-6. writes `dist\installer\SHA256SUMS-windows.txt`.
+1. runs `npm ci` and `npm run build` in `web-gui`;
+2. downloads the official Python embedded runtime matching the build Python version;
+3. installs the API dependencies into the bundled Python runtime;
+4. copies the API source, FilePromptForge, `.env.example`, and built web GUI into `dist\APICostX`;
+5. builds a small `APICostX.exe` launcher that starts the bundled Python runtime;
+6. builds `dist\installer\APICostX-Setup-<version>.exe` with Inno Setup;
+7. writes `dist\installer\SHA256SUMS-windows.txt`.
 
 ## Runtime Layout
 
