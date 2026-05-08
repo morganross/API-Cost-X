@@ -235,7 +235,7 @@ class FpfAdapter(BaseAdapter):
             # FPF paths
             fpf_dir = Path(self._get_fpf_directory())
             config_path = str(fpf_dir / "fpf_config.yaml")
-            env_path = str(fpf_dir.parents[1] / ".env")
+            env_path = os.environ.get("API_COST_X_ENV_FILE") or str(Path.cwd() / ".env")
 
             # Build kwargs for file_handler.run()
             fpf_kwargs: Dict[str, Any] = dict(

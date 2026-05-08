@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from typing import Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -98,6 +99,8 @@ def _snapshot_datasets_for_sections(requested_sections: set[str]) -> set[str]:
 
 
 def _read_mem_available_kb() -> Optional[int]:
+    if not sys.platform.startswith("linux"):
+        return None
     try:
         with open("/proc/meminfo", "r", encoding="utf-8") as handle:
             for line in handle:

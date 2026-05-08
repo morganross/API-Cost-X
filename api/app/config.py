@@ -61,12 +61,19 @@ class Settings(BaseSettings):
     perplexity_api_key: Optional[str] = None
     tavily_api_key: Optional[str] = None
     github_token: Optional[str] = None
+    nvidia_api_key: Optional[str] = None
 
     # Paths
     data_dir: Path = Field(default=Path("./data"), validation_alias=AliasChoices("DATA_DIR", "API_COST_X_DATA_DIR"))
-    documents_dir: Path = Field(default=Path("./data/documents"), validation_alias="DOCUMENTS_DIR")
-    artifacts_dir: Path = Field(default=Path("./data/artifacts"), validation_alias="ARTIFACTS_DIR")
-    logs_dir: Path = Field(default=Path("./logs"), validation_alias="LOGS_DIR")
+    documents_dir: Path = Field(
+        default=Path("./data/documents"),
+        validation_alias=AliasChoices("DOCUMENTS_DIR", "API_COST_X_DOCUMENTS_DIR"),
+    )
+    artifacts_dir: Path = Field(
+        default=Path("./data/artifacts"),
+        validation_alias=AliasChoices("ARTIFACTS_DIR", "API_COST_X_ARTIFACTS_DIR"),
+    )
+    logs_dir: Path = Field(default=Path("./logs"), validation_alias=AliasChoices("LOGS_DIR", "API_COST_X_LOGS_DIR"))
 
     def model_post_init(self, __context):
         default_data_dir = Path("./data")

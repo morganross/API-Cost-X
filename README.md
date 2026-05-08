@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-local--first-0f766e.svg">
   <img alt="SQLite" src="https://img.shields.io/badge/database-SQLite-003B57.svg">
-  <img alt="Node 20+" src="https://img.shields.io/badge/node-20%2B-339933.svg">
+  <img alt="Windows installer" src="https://img.shields.io/badge/windows-installer-0078D4.svg">
   <a href="https://scorecard.dev/viewer/?uri=github.com/morganross/API-Cost-X"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/morganross/API-Cost-X/badge"></a>
 </p>
 
@@ -35,6 +35,13 @@ By default, `./start.sh` binds to `127.0.0.1` only. Keep that default unless you
 
 ## Requirements
 
+For the Windows installer:
+
+- Windows 10 or later.
+- Provider API keys for any model providers you want to use.
+
+For the source installer:
+
 - Git.
 - Bash-compatible shell.
 - Python 3 with `venv` support.
@@ -42,9 +49,23 @@ By default, `./start.sh` binds to `127.0.0.1` only. Keep that default unless you
 - `curl`.
 - Provider API keys for any model providers you want to use.
 
-On apt-based Linux systems, `./install.sh` can install `python3-venv` and Node.js 20.x. On Windows, use WSL for the current shell-based installer. On macOS or non-apt Linux distributions, install Python 3 and Node.js 20+ before running the installer.
+On apt-based Linux systems, `./install.sh` can install `python3-venv` and Node.js 20.x. On macOS or non-apt Linux distributions, install Python 3 and Node.js 20+ before running the source installer.
 
 ## Install
+
+### Windows
+
+Download `APICostX-Setup-<version>.exe` from the GitHub release, run it, then launch APICostX from the Start Menu.
+
+The Windows installer does not require WSL, Node.js, npm, or Python. It installs the app for the current Windows user, stores provider keys in `%LOCALAPPDATA%\APICostX\.env`, stores SQLite data under `%LOCALAPPDATA%\APICostX\data`, and opens the local web GUI at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Keep the APICostX console window open while using the app. Closing that window stops the local API service.
+
+### Source
 
 ```bash
 git clone https://github.com/morganross/API-Cost-X.git
@@ -73,6 +94,8 @@ API_COST_X_SKIP_SYSTEM_DEPS=1 ./install.sh
 
 All secrets belong in the root `.env` file next to `start.sh`. The public repo includes only `.env.example` with blank/commented examples.
 
+For the Windows installer, the same single secrets file lives at `%LOCALAPPDATA%\APICostX\.env`.
+
 Open `.env`, uncomment only the providers you use, and fill in your keys:
 
 ```bash
@@ -83,6 +106,7 @@ Open `.env`, uncomment only the providers you use, and fill in your keys:
 # GROQ_API_KEY=
 # PERPLEXITY_API_KEY=
 # TAVILY_API_KEY=
+# NVIDIA_API_KEY=
 # GITHUB_TOKEN=
 ```
 
@@ -169,7 +193,7 @@ The GitHub workflow `.github/workflows/public-release-hygiene.yml` runs the same
 
 ## Release Verification
 
-Tagged releases are built by `.github/workflows/release.yml`. Release assets include source code, built web GUI assets under `assets/react-build`, SHA256 checksums, Sigstore keyless signature bundles, and GitHub artifact attestations.
+Tagged releases are built by `.github/workflows/release.yml`. Release assets include source code, built web GUI assets under `assets/react-build`, the Windows installer, SHA256 checksums, Sigstore keyless signature bundles, and GitHub artifact attestations.
 
 Verify checksums:
 
@@ -185,3 +209,11 @@ cosign verify-blob apicostx-0.1.2.tar.gz \
   --certificate-identity "https://github.com/morganross/API-Cost-X/.github/workflows/release.yml@refs/tags/v0.1.2" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 ```
+
+Build the Windows installer locally from Windows:
+
+```powershell
+.\scripts\build-windows.ps1 -Version 0.1.2
+```
+
+See `docs/windows-installer.md` for packaging details.

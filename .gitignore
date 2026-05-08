@@ -63,6 +63,7 @@ seed_artifacts/
 # Dependency folders and virtualenvs
 node_modules/
 .venv/
+.venv-windows-build/
 venv/
 env/
 __pycache__/
