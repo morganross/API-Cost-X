@@ -24,6 +24,7 @@ ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupLogging=yes
+SetupIconFile=..\assets\apicostx.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -43,5 +44,27 @@ Name: "{localappdata}\APICostX\logs"
 Name: "{autoprograms}\APICostX"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{localappdata}\APICostX"
 Name: "{autodesktop}\APICostX"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{localappdata}\APICostX"; Tasks: desktopicon
 
+[Code]
+function IsWebView2RuntimeInstalledInRoot(RootKey: Integer): Boolean;
+var
+  Version: String;
+begin
+  Result := RegQueryStringValue(RootKey, 'Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}', 'pv', Version);
+  if Result then begin
+    Result := (Version <> '') and (Version <> '0.0.0.0');
+  end;
+end;
+
+function NeedsWebView2: Boolean;
+begin
+  Result := not (
+    IsWebView2RuntimeInstalledInRoot(HKCU) or
+    IsWebView2RuntimeInstalledInRoot(HKLM) or
+    IsWebView2RuntimeInstalledInRoot(HKLM32) or
+    IsWebView2RuntimeInstalledInRoot(HKLM64)
+  );
+end;
+
 [Run]
+Filename: "{app}\runtime\webview2\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; StatusMsg: "Installing Microsoft Edge WebView2 Runtime..."; Flags: runhidden waituntilterminated; Check: NeedsWebView2
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch APICostX"; WorkingDir: "{localappdata}\APICostX"; Flags: nowait postinstall skipifsilent

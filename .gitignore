@@ -59,6 +59,8 @@ assets/react-build*/
 assets/demo-data/
 assets/demo-data*/
 seed_artifacts/
+bin/
+obj/
 
 # Dependency folders and virtualenvs
 node_modules/

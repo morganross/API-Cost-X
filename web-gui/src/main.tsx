@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FrontendTelemetry } from './components/FrontendTelemetry'
+import { applyDesktopShellClass } from './lib/desktopMode'
 import './index.css'
+import './desktop-mode.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +24,8 @@ function RoutedErrorBoundary({ children }: { children: React.ReactNode }) {
 
   return <ErrorBoundary resetKey={resetKey}>{children}</ErrorBoundary>
 }
+
+applyDesktopShellClass()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

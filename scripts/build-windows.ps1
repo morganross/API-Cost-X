@@ -54,25 +54,6 @@ function Find-InnoSetup {
     throw "Inno Setup 6 is required to build APICostX-Setup.exe. Install it, then rerun this script."
 }
 
-function Find-CSharpCompiler {
-    $Command = Get-Command "csc.exe" -ErrorAction SilentlyContinue
-    if ($Command) {
-        return $Command.Source
-    }
-
-    $Candidates = @(
-        "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe",
-        "$env:WINDIR\Microsoft.NET\Framework\v4.0.30319\csc.exe"
-    )
-    foreach ($Candidate in $Candidates) {
-        if (Test-Path -LiteralPath $Candidate) {
-            return $Candidate
-        }
-    }
-
-    throw "Could not find csc.exe to build APICostX.exe."
-}
-
 function Copy-TreeClean {
     param(
         [string]$Source,
@@ -89,24 +70,45 @@ function Copy-TreeClean {
     }
 }
 
-function Compile-Launcher {
-    param(
-        [string]$SourcePath,
-        [string]$OutputPath
-    )
-
-    $Compiler = Find-CSharpCompiler
-    & $Compiler /nologo /target:exe "/out:$OutputPath" $SourcePath
-    if ($LASTEXITCODE -ne 0) {
-        throw "csc.exe failed with exit code $LASTEXITCODE"
-    }
-}
-
 function Remove-IfExists {
     param([string]$Path)
     if (Test-Path -LiteralPath $Path) {
         Remove-Item -LiteralPath $Path -Recurse -Force
     }
+}
+
+function Publish-DesktopHost {
+    param(
+        [string]$PublishDir,
+        [string]$Destination
+    )
+
+    $DotNet = Require-Command "dotnet"
+    $ProjectPath = Join-Path $Root "installer\desktop-host\APICostX.DesktopHost.csproj"
+    if (-not (Test-Path -LiteralPath $ProjectPath)) {
+        throw "Desktop host project not found: $ProjectPath"
+    }
+
+    Remove-IfExists $PublishDir
+    New-Item -ItemType Directory -Force -Path $PublishDir | Out-Null
+
+    & $DotNet publish $ProjectPath `
+        --configuration Release `
+        --runtime win-x64 `
+        --self-contained true `
+        -p:PublishTrimmed=false `
+        -p:PublishSingleFile=false `
+        --output $PublishDir
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet publish failed for APICostX.DesktopHost.csproj with exit code $LASTEXITCODE"
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $PublishDir "APICostX.exe"))) {
+        throw "Desktop host publish did not produce APICostX.exe"
+    }
+
+    Copy-Item -Path (Join-Path $PublishDir "*") -Destination $Destination -Recurse -Force
 }
 
 function Prune-PythonRuntime {
@@ -133,8 +135,10 @@ $InnoSetup = Find-InnoSetup
 $DistRoot = Join-Path $Root "dist"
 $DistApp = Join-Path $DistRoot "APICostX"
 $RuntimePython = Join-Path $DistApp "runtime\python"
+$DesktopHostPublish = Join-Path $DistRoot "desktop-host-publish"
 $SitePackages = Join-Path $RuntimePython "Lib\site-packages"
 $WebDist = Join-Path $Root "assets\react-build"
+$WebView2Bootstrapper = Join-Path $DistApp "runtime\webview2\MicrosoftEdgeWebview2Setup.exe"
 
 if (Test-Path -LiteralPath $DistApp) {
     Remove-Item -LiteralPath $DistApp -Recurse -Force
@@ -183,12 +187,13 @@ Copy-Item -LiteralPath (Join-Path $Root ".env.example") -Destination (Join-Path 
 Copy-Item -LiteralPath (Join-Path $Root "LICENSE") -Destination (Join-Path $DistApp "LICENSE") -Force
 Copy-Item -LiteralPath (Join-Path $Root "README.md") -Destination (Join-Path $DistApp "README.md") -Force
 
-Compile-Launcher `
-    -SourcePath (Join-Path $Root "installer\launcher\APICostXLauncher.cs") `
-    -OutputPath (Join-Path $DistApp "APICostX.exe")
+Publish-DesktopHost -PublishDir $DesktopHostPublish -Destination $DistApp
+
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $WebView2Bootstrapper) | Out-Null
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile $WebView2Bootstrapper -UseBasicParsing
 
 if (-not (Test-Path -LiteralPath (Join-Path $DistApp "APICostX.exe"))) {
-    throw "Launcher build did not produce dist\APICostX\APICostX.exe"
+    throw "Desktop host publish did not produce dist\APICostX\APICostX.exe"
 }
 
 & $InnoSetup "/DMyAppVersion=$SafeVersion" (Join-Path $Root "installer\inno\APICostX.iss")

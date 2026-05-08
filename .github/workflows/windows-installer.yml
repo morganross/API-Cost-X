@@ -36,6 +36,10 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
+      - name: Show .NET SDK info
+        shell: pwsh
+        run: dotnet --info
+
       - name: Build installer
         shell: pwsh
         run: |
@@ -47,6 +51,10 @@ jobs:
             $version = "0.0.0-ci.${{ github.run_number }}"
           }
           .\scripts\build-windows.ps1 -Version $version
+
+      - name: Smoke test desktop host bundle
+        shell: pwsh
+        run: .\scripts\test-windows-desktop-host.ps1
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0

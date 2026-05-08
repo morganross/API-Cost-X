@@ -38,6 +38,7 @@ By default, `./start.sh` binds to `127.0.0.1` only. Keep that default unless you
 For the Windows installer:
 
 - Windows 10 or later.
+- Microsoft Edge WebView2 Runtime for the desktop app window.
 - Provider API keys for any model providers you want to use.
 
 For the source installer:
@@ -57,13 +58,9 @@ On apt-based Linux systems, `./install.sh` can install `python3-venv` and Node.j
 
 Download `APICostX-Setup-<version>.exe` from the GitHub release, run it, then launch APICostX from the Start Menu.
 
-The Windows installer does not require WSL, Node.js, npm, or a system Python install. It installs a bundled Python runtime for the current Windows user, stores provider keys in `%LOCALAPPDATA%\APICostX\.env`, stores SQLite data under `%LOCALAPPDATA%\APICostX\data`, and opens the local web GUI at:
+The Windows installer does not require WSL, Node.js, npm, or a system Python install. It installs a bundled Python runtime for the current Windows user, stores provider keys in `%LOCALAPPDATA%\APICostX\.env`, stores SQLite data under `%LOCALAPPDATA%\APICostX\data`, starts the local service, and opens the GUI in its own APICostX desktop window.
 
-```text
-http://127.0.0.1:8000
-```
-
-Keep the APICostX console window open while using the app. Closing that window stops the local API service.
+The desktop app uses `127.0.0.1:8000` for the bundled local service. Treat that loopback address as diagnostic only; installer users should launch APICostX from the Start Menu instead of manually browsing to it.
 
 ### Source
 

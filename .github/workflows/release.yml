@@ -207,6 +207,10 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
+      - name: Show .NET SDK info
+        shell: pwsh
+        run: dotnet --info
+
       - name: Build installer
         shell: pwsh
         run: |
@@ -215,6 +219,10 @@ jobs:
             $version = $Matches[1]
           }
           .\scripts\build-windows.ps1 -Version $version
+
+      - name: Smoke test desktop host bundle
+        shell: pwsh
+        run: .\scripts\test-windows-desktop-host.ps1
 
       - name: Upload installer build artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -233,4 +241,9 @@ jobs:
       - name: Publish installer to GitHub Release
         shell: pwsh
         run: |
-          gh release upload "${{ github.ref_name }}" dist/installer/*.exe dist/installer/SHA256SUMS-windows.txt --clobber
+          $installer = Get-ChildItem -LiteralPath dist/installer -Filter '*.exe' | Select-Object -First 1
+          if (-not $installer) {
+            throw 'No Windows installer executable found in dist/installer.'
+          }
+          $checksum = Resolve-Path -LiteralPath dist/installer/SHA256SUMS-windows.txt
+          gh release upload "${{ github.ref_name }}" $installer.FullName $checksum.Path --clobber

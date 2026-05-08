@@ -12,6 +12,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 LOCAL_BIND_HOSTS = {"127.0.0.1", "localhost", "::1"}
+OPEN_BROWSER_FALSE_VALUES = {"0", "false", "no", "off"}
 
 
 def _runtime_home() -> Path:
@@ -129,6 +130,11 @@ def _enforce_local_bind(host: str) -> None:
     )
 
 
+def _should_open_browser() -> bool:
+    value = os.environ.get("API_COST_X_OPEN_BROWSER", "1")
+    return value.strip().lower() not in OPEN_BROWSER_FALSE_VALUES
+
+
 def _open_browser_when_ready(base_url: str) -> None:
     health_url = f"{base_url}/api/health"
     for _ in range(80):
@@ -146,7 +152,8 @@ def main() -> None:
 
     browser_host = "127.0.0.1" if host in LOCAL_BIND_HOSTS else host
     base_url = f"http://{browser_host}:{port}"
-    threading.Thread(target=_open_browser_when_ready, args=(base_url,), daemon=True).start()
+    if _should_open_browser():
+        threading.Thread(target=_open_browser_when_ready, args=(base_url,), daemon=True).start()
 
     import uvicorn
     from app.main import app

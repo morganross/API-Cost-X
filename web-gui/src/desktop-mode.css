@@ -1,0 +1,24 @@
+html.apicostx-desktop-shell,
+html.apicostx-desktop-shell body,
+html.apicostx-desktop-shell #root {
+  height: 100%;
+}
+
+html.apicostx-desktop-shell body {
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.apicostx-desktop-shell #root {
+  min-height: 100vh;
+}
+
+html.apicostx-desktop-shell a[href^="http"]::after {
+  content: "";
+}
+
+html.apicostx-desktop-shell button,
+html.apicostx-desktop-shell [role="button"] {
+  user-select: none;
+}
