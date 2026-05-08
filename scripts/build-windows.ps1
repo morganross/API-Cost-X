@@ -35,8 +35,8 @@ function Find-InnoSetup {
         return $Command.Source
     }
 
-    $ProgramFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
     $Candidates = @()
+    $ProgramFilesX86 = [Environment]::GetEnvironmentVariable("ProgramFiles(x86)")
     if ($ProgramFilesX86) {
         $Candidates += Join-Path $ProgramFilesX86 "Inno Setup 6\ISCC.exe"
     }
@@ -54,24 +54,49 @@ function Find-InnoSetup {
     throw "Inno Setup 6 is required to build APICostX-Setup.exe. Install it, then rerun this script."
 }
 
+function Copy-TreeClean {
+    param(
+        [string]$Source,
+        [string]$Destination
+    )
+
+    if (Test-Path -LiteralPath $Destination) {
+        Remove-Item -LiteralPath $Destination -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    robocopy $Source $Destination /E /XD __pycache__ .pytest_cache .mypy_cache .ruff_cache /XF *.pyc *.pyo | Out-Null
+    if ($LASTEXITCODE -gt 7) {
+        throw "robocopy failed copying $Source to $Destination with exit code $LASTEXITCODE"
+    }
+}
+
+function Compile-Launcher {
+    param(
+        [string]$SourcePath,
+        [string]$OutputPath
+    )
+
+    Add-Type -TypeDefinition (Get-Content -Raw -LiteralPath $SourcePath) `
+        -OutputAssembly $OutputPath `
+        -OutputType ConsoleApplication `
+        -ReferencedAssemblies @("System.dll")
+}
+
 $Python = Require-Command "python"
 Require-Command "node" | Out-Null
 Require-Command "npm" | Out-Null
 $InnoSetup = Find-InnoSetup
 
-$BuildVenv = Join-Path $Root ".venv-windows-build"
-if (-not (Test-Path -LiteralPath (Join-Path $BuildVenv "Scripts\\python.exe"))) {
-    & $Python -m venv $BuildVenv
-}
-$BuildPython = Join-Path $BuildVenv "Scripts\\python.exe"
+$DistRoot = Join-Path $Root "dist"
+$DistApp = Join-Path $DistRoot "APICostX"
+$RuntimePython = Join-Path $DistApp "runtime\python"
+$SitePackages = Join-Path $RuntimePython "Lib\site-packages"
+$WebDist = Join-Path $Root "assets\react-build"
 
-& $BuildPython -m pip install --upgrade pip
-& $BuildPython -m pip install -e (Join-Path $Root "api") pyinstaller==6.11.1
-
-$WebDist = Join-Path $Root "assets\\react-build"
-if (Test-Path -LiteralPath $WebDist) {
-    Remove-Item -LiteralPath $WebDist -Recurse -Force
+if (Test-Path -LiteralPath $DistApp) {
+    Remove-Item -LiteralPath $DistApp -Recurse -Force
 }
+New-Item -ItemType Directory -Force -Path $DistApp,$RuntimePython,$SitePackages | Out-Null
 
 Push-Location (Join-Path $Root "web-gui")
 try {
@@ -83,30 +108,54 @@ finally {
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $WebDist "index.html"))) {
-    throw "Web GUI build did not produce assets\\react-build\\index.html"
+    throw "Web GUI build did not produce assets\react-build\index.html"
 }
 
-$DistApp = Join-Path $Root "dist\\APICostX"
-if (Test-Path -LiteralPath $DistApp) {
-    Remove-Item -LiteralPath $DistApp -Recurse -Force
-}
+$PythonVersion = & $Python -c "import platform; print(platform.python_version())"
+$EmbedUrl = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip"
+$EmbedZip = Join-Path $env:TEMP "python-$PythonVersion-embed-amd64.zip"
+Invoke-WebRequest -Uri $EmbedUrl -OutFile $EmbedZip
+Expand-Archive -LiteralPath $EmbedZip -DestinationPath $RuntimePython -Force
 
-& $BuildPython -m PyInstaller --noconfirm --clean (Join-Path $Root "installer\\pyinstaller\\apicostx.spec")
+$PthFile = Get-ChildItem -LiteralPath $RuntimePython -Filter "python*._pth" | Select-Object -First 1
+if (-not $PthFile) {
+    throw "Could not find Python embedded ._pth file in $RuntimePython"
+}
+@(
+    "python$($PythonVersion.Split('.')[0])$($PythonVersion.Split('.')[1]).zip",
+    ".",
+    "Lib\site-packages",
+    "import site"
+) | Set-Content -Encoding ascii -LiteralPath $PthFile.FullName
+
+& $Python -m pip install --upgrade pip
+& $Python -m pip install --target $SitePackages (Join-Path $Root "api")
+
+Copy-TreeClean -Source (Join-Path $Root "api\app") -Destination (Join-Path $DistApp "app")
+Copy-TreeClean -Source (Join-Path $Root "packages") -Destination (Join-Path $DistApp "packages")
+Copy-TreeClean -Source $WebDist -Destination (Join-Path $DistApp "assets\react-build")
+Copy-Item -LiteralPath (Join-Path $Root ".env.example") -Destination (Join-Path $DistApp ".env.example") -Force
+Copy-Item -LiteralPath (Join-Path $Root "LICENSE") -Destination (Join-Path $DistApp "LICENSE") -Force
+Copy-Item -LiteralPath (Join-Path $Root "README.md") -Destination (Join-Path $DistApp "README.md") -Force
+
+Compile-Launcher `
+    -SourcePath (Join-Path $Root "installer\launcher\APICostXLauncher.cs") `
+    -OutputPath (Join-Path $DistApp "APICostX.exe")
 
 if (-not (Test-Path -LiteralPath (Join-Path $DistApp "APICostX.exe"))) {
-    throw "PyInstaller did not produce dist\\APICostX\\APICostX.exe"
+    throw "Launcher build did not produce dist\APICostX\APICostX.exe"
 }
 
-& $InnoSetup "/DMyAppVersion=$SafeVersion" (Join-Path $Root "installer\\inno\\APICostX.iss")
+& $InnoSetup "/DMyAppVersion=$SafeVersion" (Join-Path $Root "installer\inno\APICostX.iss")
 
-$Installer = Join-Path $Root "dist\\installer\\APICostX-Setup-$SafeVersion.exe"
+$Installer = Join-Path $Root "dist\installer\APICostX-Setup-$SafeVersion.exe"
 if (-not (Test-Path -LiteralPath $Installer)) {
     throw "Inno Setup did not produce $Installer"
 }
 
 $Hash = Get-FileHash -Algorithm SHA256 -LiteralPath $Installer
 $HashLine = "$($Hash.Hash.ToLowerInvariant())  $(Split-Path -Leaf $Installer)"
-$HashLine | Set-Content -Encoding ascii -LiteralPath (Join-Path $Root "dist\\installer\\SHA256SUMS-windows.txt")
+$HashLine | Set-Content -Encoding ascii -LiteralPath (Join-Path $Root "dist\installer\SHA256SUMS-windows.txt")
 
 Write-Host "Built $Installer"
 Write-Host $HashLine

@@ -57,7 +57,7 @@ On apt-based Linux systems, `./install.sh` can install `python3-venv` and Node.j
 
 Download `APICostX-Setup-<version>.exe` from the GitHub release, run it, then launch APICostX from the Start Menu.
 
-The Windows installer does not require WSL, Node.js, npm, or Python. It installs the app for the current Windows user, stores provider keys in `%LOCALAPPDATA%\APICostX\.env`, stores SQLite data under `%LOCALAPPDATA%\APICostX\data`, and opens the local web GUI at:
+The Windows installer does not require WSL, Node.js, npm, or a system Python install. It installs a bundled Python runtime for the current Windows user, stores provider keys in `%LOCALAPPDATA%\APICostX\.env`, stores SQLite data under `%LOCALAPPDATA%\APICostX\data`, and opens the local web GUI at:
 
 ```text
 http://127.0.0.1:8000
