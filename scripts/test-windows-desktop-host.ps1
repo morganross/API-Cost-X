@@ -21,7 +21,7 @@ function Assert-BundledFile {
         throw "Missing $Description at $Path"
     }
 
-    Write-Host "Verified $Description: $Path"
+    Write-Host "Verified ${Description}: $Path"
 }
 
 $RequiredFiles = @(
