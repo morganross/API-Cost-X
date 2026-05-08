@@ -145,10 +145,11 @@ def main() -> None:
     threading.Thread(target=_open_browser_when_ready, args=(base_url,), daemon=True).start()
 
     import uvicorn
+    from app.main import app
 
     print(f"APICostX is starting at {base_url}")
     print(f"Local config and SQLite data live in: {Path.cwd()}")
-    uvicorn.run("app.main:app", host=host, port=port, reload=False)
+    uvicorn.run(app, host=host, port=port, reload=False)
 
 
 if __name__ == "__main__":
