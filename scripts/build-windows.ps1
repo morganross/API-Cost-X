@@ -102,6 +102,29 @@ function Compile-Launcher {
     }
 }
 
+function Remove-IfExists {
+    param([string]$Path)
+    if (Test-Path -LiteralPath $Path) {
+        Remove-Item -LiteralPath $Path -Recurse -Force
+    }
+}
+
+function Prune-PythonRuntime {
+    param([string]$RootPath)
+
+    Get-ChildItem -LiteralPath $RootPath -Recurse -Directory -Force |
+        Where-Object { $_.Name -in @("__pycache__", ".pytest_cache", "tests", "test", "testing", "examples", "benchmarks", "guardrail_benchmarks") } |
+        Sort-Object FullName -Descending |
+        ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
+
+    Get-ChildItem -LiteralPath $RootPath -Recurse -File -Force |
+        Where-Object { $_.Extension -in @(".pyc", ".pyo") } |
+        ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force }
+
+    Remove-IfExists (Join-Path $RootPath "litellm\proxy\guardrails\guardrail_hooks\litellm_content_filter\guardrail_benchmarks")
+    Remove-IfExists (Join-Path $RootPath "litellm\proxy\guardrails\guardrail_hooks\litellm_content_filter\examples")
+}
+
 $Python = Require-Command "python"
 Require-Command "node" | Out-Null
 Require-Command "npm" | Out-Null
@@ -149,7 +172,9 @@ if (-not $PthFile) {
 ) | Set-Content -Encoding ascii -LiteralPath $PthFile.FullName
 
 & $Python -m pip install --upgrade pip
-& $Python -m pip install --target $SitePackages (Join-Path $Root "api")
+$ApiPath = Join-Path $Root "api"
+& $Python -m pip install --no-compile --target $SitePackages $ApiPath
+Prune-PythonRuntime -RootPath $SitePackages
 
 Copy-TreeClean -Source (Join-Path $Root "api\app") -Destination (Join-Path $DistApp "app")
 Copy-TreeClean -Source (Join-Path $Root "packages") -Destination (Join-Path $DistApp "packages")
