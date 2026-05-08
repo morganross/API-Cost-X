@@ -22,7 +22,8 @@ if sys.platform == 'win32':
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -117,7 +118,16 @@ class DocsSecurityHeadersMiddleware(BaseHTTPMiddleware):
 # Configure logging with BOTH console AND file output
 # This fixes the gap where APICostX main process logs were console-only
 _log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-_log_dir = Path(__file__).parent.parent / "logs"
+
+
+def _default_log_dir() -> Path:
+    configured = os.environ.get("API_COST_X_LOGS_DIR") or os.environ.get("LOGS_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path.cwd() / "logs"
+
+
+_log_dir = _default_log_dir()
 _log_dir.mkdir(parents=True, exist_ok=True)
 
 # Generate timestamped log filename: apicostx_main_YYYYMMDD_HHMMSS.log
@@ -214,6 +224,36 @@ def _set_active_runs_gauge() -> None:
         _ACTIVE_RUNS_GAUGE.set(len(_active_executors))
     except Exception:
         logger.exception("Failed to refresh active-runs gauge")
+
+
+def _resolve_web_dist_dir() -> Path | None:
+    """Find the built web GUI for release archives and packaged desktop builds."""
+    candidates: list[Path] = []
+    configured = os.environ.get("API_COST_X_WEB_DIST_DIR")
+    if configured:
+        candidates.append(Path(configured).expanduser())
+
+    bundle_root = getattr(sys, "_MEIPASS", None)
+    if bundle_root:
+        candidates.append(Path(bundle_root) / "assets" / "react-build")
+
+    repo_root = Path(__file__).resolve().parents[2]
+    candidates.extend(
+        [
+            repo_root / "assets" / "react-build",
+            Path.cwd() / "assets" / "react-build",
+        ]
+    )
+
+    seen: set[Path] = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if (resolved / "index.html").is_file():
+            return resolved
+    return None
 
 
 async def _periodic_finalization_recovery_loop() -> None:
@@ -398,6 +438,12 @@ def create_app() -> FastAPI:
     # Include API routes
     app.include_router(api_router)
 
+    web_dist_dir = _resolve_web_dist_dir()
+    if web_dist_dir:
+        assets_dir = web_dist_dir / "assets"
+        if assets_dir.is_dir():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="web-gui-assets")
+
     # Validation error handler - log full details for debugging
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -433,9 +479,11 @@ def create_app() -> FastAPI:
             content={"detail": "Internal server error"},
         )
 
-    # The web GUI is served separately by Vite or the local installer.
+    # The web GUI is served by FastAPI when built assets are available.
     @app.get("/", include_in_schema=False)
     async def root():
+        if web_dist_dir:
+            return FileResponse(web_dist_dir / "index.html")
         return {"service": "APICostX", "version": "2.0.0", "docs": "/docs", "api": "/api"}
 
     @app.get("/metrics", include_in_schema=False)
@@ -446,6 +494,25 @@ def create_app() -> FastAPI:
 
         _set_active_runs_gauge()
         return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+    if web_dist_dir:
+        web_root = web_dist_dir.resolve()
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def web_gui_fallback(full_path: str):
+            first_segment = full_path.split("/", 1)[0]
+            if first_segment in {"api", "docs", "redoc", "openapi.json", "metrics"}:
+                raise HTTPException(status_code=404, detail="Not found")
+
+            requested = (web_root / full_path).resolve()
+            try:
+                requested.relative_to(web_root)
+            except ValueError as exc:
+                raise HTTPException(status_code=404, detail="Not found") from exc
+
+            if requested.is_file():
+                return FileResponse(requested)
+            return FileResponse(web_root / "index.html")
 
     return app
 

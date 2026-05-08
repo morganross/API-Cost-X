@@ -29,7 +29,12 @@ _REQUEST_EVENTS: deque[Dict[str, Any]] = deque()
 _REQUEST_EVENTS_LOCK = threading.Lock()
 _REQUESTS_IN_PROGRESS = 0
 _REQUESTS_IN_PROGRESS_LOCK = threading.Lock()
-_SECURITY_SUMMARY_PATH = Path("/var/lib/prometheus/node-exporter/apicostx-security-summary.prom")
+_SECURITY_SUMMARY_PATH = Path(
+    os.environ.get(
+        "API_COST_X_SECURITY_SUMMARY_PATH",
+        "/var/lib/prometheus/node-exporter/apicostx-security-summary.prom",
+    )
+)
 _PROM_LINE_RE = re.compile(
     r"^(?P<name>[a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{(?P<labels>[^}]*)\})?\s+(?P<value>[-+0-9.eE]+)\s*$"
 )
