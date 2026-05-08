@@ -54,6 +54,25 @@ function Find-InnoSetup {
     throw "Inno Setup 6 is required to build APICostX-Setup.exe. Install it, then rerun this script."
 }
 
+function Find-CSharpCompiler {
+    $Command = Get-Command "csc.exe" -ErrorAction SilentlyContinue
+    if ($Command) {
+        return $Command.Source
+    }
+
+    $Candidates = @(
+        "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe",
+        "$env:WINDIR\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+    )
+    foreach ($Candidate in $Candidates) {
+        if (Test-Path -LiteralPath $Candidate) {
+            return $Candidate
+        }
+    }
+
+    throw "Could not find csc.exe to build APICostX.exe."
+}
+
 function Copy-TreeClean {
     param(
         [string]$Source,
@@ -76,10 +95,11 @@ function Compile-Launcher {
         [string]$OutputPath
     )
 
-    Add-Type -TypeDefinition (Get-Content -Raw -LiteralPath $SourcePath) `
-        -OutputAssembly $OutputPath `
-        -OutputType ConsoleApplication `
-        -ReferencedAssemblies @("System.dll")
+    $Compiler = Find-CSharpCompiler
+    & $Compiler /nologo /target:exe "/out:$OutputPath" $SourcePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "csc.exe failed with exit code $LASTEXITCODE"
+    }
 }
 
 $Python = Require-Command "python"
